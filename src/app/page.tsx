@@ -12,6 +12,7 @@ import {Info} from "lucide-react"
 import {Badge} from "@/components/ui/badge";
 import {Toaster} from "@/components/ui/toaster";
 import Link from "next/link";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function Home() {
   const [loadingRecipes, setLoadingRecipes] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = useState(false);
+  const [language, setLanguage] = useState<string>('English');
 
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +62,7 @@ export default function Home() {
 
     setLoadingRecipes(true);
     try {
-      const result = await generateRecipeSuggestions({ingredients: ingredients});
+      const result = await generateRecipeSuggestions({ingredients: ingredients, language: language});
       setRecipes(result.recipes);
     } catch (error) {
       console.error('Error generating recipe suggestions:', error);
@@ -115,6 +117,17 @@ export default function Home() {
                 <Badge key={index}>{ingredient}</Badge>
               ))}
             </div>
+            <Select onValueChange={setLanguage}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="English">English</SelectItem>
+                <SelectItem value="Marathi">Marathi</SelectItem>
+                <SelectItem value="Hindi">Hindi</SelectItem>
+                {/* Add more languages as needed */}
+              </SelectContent>
+            </Select>
             <Button onClick={generateRecipeSuggestionsFromIngredients} disabled={loadingRecipes || ingredients.length === 0} className="mt-4 bg-accent text-primary-foreground hover:bg-accent-foreground">
               {loadingRecipes ? 'Generating Recipes...' : 'Generate Recipe Suggestions'}
             </Button>

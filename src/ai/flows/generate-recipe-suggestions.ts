@@ -1,9 +1,8 @@
-// Implemented the Genkit flow for generating recipe suggestions based on identified ingredients.
 'use server';
 /**
- * @fileOverview Generates recipe suggestions based on identified ingredients.
+ * @fileOverview Generates recipe suggestions based on identified ingredients and a specified language.
  *
- * - generateRecipeSuggestions - A function that generates recipe suggestions.
+ * - generateRecipeSuggestions - A function that generates recipe suggestions in a given language.
  * - GenerateRecipeSuggestionsInput - The input type for the generateRecipeSuggestions function.
  * - GenerateRecipeSuggestionsOutput - The return type for the generateRecipeSuggestions function.
  */
@@ -15,6 +14,7 @@ const GenerateRecipeSuggestionsInputSchema = z.object({
   ingredients: z.array(
     z.string().describe('A list of ingredients identified from the image.')
   ).describe('The ingredients identified from the image.'),
+  language: z.string().describe('The language in which to generate the recipe suggestions.').optional().default('English'), // Added language input
 });
 export type GenerateRecipeSuggestionsInput = z.infer<typeof GenerateRecipeSuggestionsInputSchema>;
 
@@ -58,6 +58,7 @@ const prompt = ai.definePrompt({
       ingredients: z.array(
         z.string().describe('A list of ingredients identified from the image.')
       ).describe('The ingredients identified from the image.'),
+      language: z.string().describe('The language in which to generate the recipe suggestions.').optional().default('English'), // Added language input
     }),
   },
   output: {
@@ -72,7 +73,7 @@ const prompt = ai.definePrompt({
       ).describe('A list of recipe suggestions.'),
     }),
   },
-  prompt: `You are a helpful recipe assistant. Given the following ingredients, suggest recipes that can be made.
+  prompt: `You are a helpful recipe assistant. Given the following ingredients, suggest recipes that can be made.  The recipes should be in {{{language}}} language.
 
 Ingredients: {{{ingredients}}}
 
