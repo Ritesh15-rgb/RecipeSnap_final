@@ -11,6 +11,7 @@ import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert"
 import {Info} from "lucide-react"
 import {Badge} from "@/components/ui/badge";
 import {Toaster} from "@/components/ui/toaster";
+import Link from "next/link";
 
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
@@ -40,18 +41,6 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
-    const captureImage = () => {
-        if (videoRef.current) {
-            const canvas = document.createElement('canvas');
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/png');
-            setImage(dataUrl);
-        }
-    };
-
   const identifyIngredientsFromImage = async () => {
     if (!image) return;
 
@@ -80,29 +69,6 @@ export default function Home() {
     }
   };
 
-    useEffect(() => {
-        const getCameraPermission = async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({video: true});
-                setHasCameraPermission(true);
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-            } catch (error) {
-                console.error('Error accessing camera:', error);
-                setHasCameraPermission(false);
-                // toast({
-                //     variant: 'destructive',
-                //     title: 'Camera Access Denied',
-                //     description: 'Please enable camera permissions in your browser settings to use this app.',
-                // });
-            }
-        };
-
-        getCameraPermission();
-    }, []);
-
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
         <Toaster />
@@ -117,11 +83,6 @@ export default function Home() {
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <Input type="file" accept="image/*" onChange={handleImageUpload} className="mb-2" />
-
-              <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted />
-              <Button onClick={captureImage} disabled={!hasCameraPermission} className="mt-2 bg-accent text-primary-foreground hover:bg-accent-foreground">
-                  Capture Image from Camera
-              </Button>
 
             {image && (
               <img src={image} alt="Uploaded ingredients" className="max-w-full h-auto rounded-md" />
@@ -182,7 +143,7 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea value={recipe.instructions} readOnly className="min-h-[100px]"/>
+                  <Link href={`/recipe/${recipe.name}`}><Textarea value={recipe.instructions} readOnly className="min-h-[100px]"/></Link>
                 </CardContent>
               </Card>
             ))}
