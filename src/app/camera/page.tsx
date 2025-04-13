@@ -24,6 +24,7 @@ const CameraPage = () => {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState(false);
+  const [generatedRecipesHeading, setGeneratedRecipesHeading] = useState("Generated Recipes:"); // Default English
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -47,6 +48,32 @@ const CameraPage = () => {
 
     getCameraPermission();
   }, []);
+
+  useEffect(() => {
+    switch (language) {
+      case "mr":
+        setGeneratedRecipesHeading("व्युत्पन्न पाककृती:"); // Marathi
+        break;
+      case "hi":
+        setGeneratedRecipesHeading("उत्पन्न व्यंजन:"); // Hindi
+        break;
+      case "es":
+        setGeneratedRecipesHeading("Recetas generadas:"); // Spanish
+        break;
+      case "fr":
+        setGeneratedRecipesHeading("Recettes générées:"); // French
+        break;
+      case "de":
+        setGeneratedRecipesHeading("Generierte Rezepte:"); // German
+        break;
+      case "ja":
+        setGeneratedRecipesHeading("生成されたレシピ:"); // Japanese
+        break;
+      default:
+        setGeneratedRecipesHeading("Generated Recipes:"); // English
+        break;
+    }
+  }, [language]);
 
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -212,7 +239,7 @@ const CameraPage = () => {
 
           {recipes.length > 0 && (
             <div className="mt-4">
-              <h3 className="text-lg font-semibold">Generated Recipes:</h3>
+              <h3 className="text-lg font-semibold">{generatedRecipesHeading}</h3>
               <ul>
                 {recipes.map((recipe, index) => (
                   <li key={index}>
