@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +13,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Recipe} from "@/components/RecipeCard";
 
 const CreateRecipe = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -180,7 +180,7 @@ const CreateRecipe = () => {
     <div className="max-w-md mx-auto px-4 py-6 bg-gray-50 min-h-screen">
       <div className="flex items-center mb-6">
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => router.back()}
           className="p-2"
         >
           <ArrowLeft className="h-6 w-6" />
@@ -292,7 +292,7 @@ const CreateRecipe = () => {
                 <ul>
                     {recipes.map((recipe, index) => (
                         <li key={index}>
-                            <Button variant="link" onClick={() => navigate(`/recipe/${encodeURIComponent(recipe.title)}`)}>{recipe.title}</Button>
+                            <Button variant="link" onClick={() => router.push(`/recipe/${encodeURIComponent(recipe.title)}`)}>{recipe.title}</Button>
                             <p>{recipe.description}</p>
                             {recipe.tipsAndTricks && recipe.tipsAndTricks.length > 0 && (
                                 <>
@@ -324,3 +324,4 @@ const CreateRecipe = () => {
 };
 
 export default CreateRecipe;
+
