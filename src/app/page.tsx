@@ -1,15 +1,15 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import CategoryFilter from '@/components/CategoryFilter';
 import RecipeGrid from '@/components/RecipeGrid';
 import PopularRecipes from '@/components/PopularRecipes';
 import CameraButton from '@/components/CameraButton';
-import {Recipe} from '@/components/RecipeCard';
-import {useToast} from '@/hooks/use-toast';
+import { Recipe } from '@/components/RecipeCard';
+import { useToast } from '@/components/ui/use-toast';
 
-const recipesData = [
+const mockRecipes: Recipe[] = [
   {
     id: '1',
     title: 'Chicken Fried Rice',
@@ -73,70 +73,59 @@ const recipesData = [
     calories: 90,
     imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735',
     category: 'Beverages',
-  },
+  }
 ];
 
-type Category =
-  | 'All'
-  | 'Vegetable'
-  | 'Rice'
-  | 'Fruit'
-  | 'Breakfast'
-  | 'Seafood'
-  | 'Fast Food'
-  | 'Dessert'
-  | 'Beverages';
+type Category = 'All' | 'Vegetable' | 'Rice' | 'Fruit' | 'Breakfast' | 'Seafood' | 'Fast Food' | 'Dessert' | 'Beverages';
 
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const {toast} = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     // In a real app, we would fetch from an API
-    setRecipes(recipesData);
-
+    setRecipes(mockRecipes);
+    
     // Display welcome toast on initial load
     toast({
-      title: 'Welcome to Springy Salads!',
-      description: 'Discover healthy and delicious recipes',
-      duration: 3000,
+      title: "Welcome to Springy Salads!",
+      description: "Discover healthy and delicious recipes",
+      duration: 1000,
     });
   }, []);
-
-  const featuredRecipes =
-    activeCategory === 'All'
-      ? recipes
-      : recipes.filter(r => r.category === activeCategory);
-
+  
+  const featuredRecipes = activeCategory === 'All' 
+    ? recipes 
+    : recipes.filter(r => r.category === activeCategory);
+    
   const popularRecipes = recipes.filter(r => r.calories > 200);
 
   return (
     <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
       <Navbar />
-
+      
       <div className="mb-4">
         <h1 className="text-4xl font-bold">Springy Salads</h1>
         <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
-
-      <CategoryFilter
+      
+      <CategoryFilter 
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
       />
-
+      
       {featuredRecipes.length > 0 && (
-        <RecipeGrid
+        <RecipeGrid 
           recipes={featuredRecipes}
-          category={activeCategory}
+          category={activeCategory} 
           title={`${activeCategory} Recipes`}
         />
       )}
-
+      
       <PopularRecipes recipes={popularRecipes} />
-
+      
       <CameraButton />
-
     </div>
   );
 };
