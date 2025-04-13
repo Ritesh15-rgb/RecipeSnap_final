@@ -9,7 +9,7 @@ import {generateRecipeSuggestions} from '@/ai/flows/generate-recipe-suggestions'
 import {Recipe} from "@/components/RecipeCard";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Languages} from "@/components/LanguageFilter";
-import {Slot} from "@radix-ui/react-slot";
+import {Camera} from "lucide-react";
 
 const CameraPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -90,17 +90,22 @@ const CameraPage = () => {
             className="hidden"
             id="image-upload"
           />
-          <label htmlFor="image-upload">
-            <Button
-              asChild
-              disabled={isLoading}
-              className="mt-2 bg-accent text-primary-foreground hover:bg-accent-foreground"
-            >
-              <Slot>
-                {isLoading ? 'Loading...' : 'Upload Image'}
-              </Slot>
-            </Button>
-          </label>
+          <Button
+            asChild={false}
+            disabled={isLoading}
+            className="mt-2 bg-accent text-primary-foreground hover:bg-accent-foreground"
+            onClick={() => document.getElementById('image-upload')?.click()}
+            htmlFor = "image-upload"
+          >
+
+              {isLoading ? 'Loading...' : (
+                  <>
+                    <Camera className="mr-2 h-4 w-4"/>
+                      Upload Image
+                  </>
+              )}
+
+          </Button>
 
           {image && (
             <img src={image} alt="Uploaded ingredients" className="max-w-full h-auto rounded-md mt-4"/>
