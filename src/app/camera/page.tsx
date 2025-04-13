@@ -1,79 +1,133 @@
 'use client';
 
-import {useState, useRef, useEffect} from 'react';
+import {useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
-import {Info} from 'lucide-react';
 import {useToast} from "@/hooks/use-toast";
+import {identifyIngredients} from '@/ai/flows/identify-ingredients';
+import {generateRecipeSuggestions} from '@/ai/flows/generate-recipe-suggestions';
+import {Recipe} from "@/components/RecipeCard";
 
 const CameraPage = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [image, setImage] = useState<string | null>(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState(false);
-    const { toast } = useToast()
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const {toast} = useToast();
 
-  const captureImage = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/png');
-      setImage(dataUrl);
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        setHasCameraPermission(true);
+  const generateRecipes = async () => {
+    if (!image) {
+      toast({
+        variant: 'destructive',
+        title: 'No Image Selected',
+        description: 'Please upload an image to generate recipes.',
+      });
+      return;
+    }
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-          toast({
-              variant: 'destructive',
-              title: 'Camera Access Denied',
-              description: 'Please enable camera permissions in your browser settings to use this app.',
-          });
-      }
-    };
+    setIsLoading(true);
+    try {
+      // 1. Identify ingredients
+      const ingredientResult = await identifyIngredients({photoUrl: image});
+      const identifiedIngredients = ingredientResult.ingredients;
+      setIngredients(identifiedIngredients);
 
-    getCameraPermission();
-  }, [toast]);
+      // 2. Generate recipe suggestions
+      const recipeResult = await generateRecipeSuggestions({ingredients: identifiedIngredients});
+      setRecipes(recipeResult.recipes.map(recipe => ({
+        id: recipe.name, // Use recipe name as ID (assuming unique)
+        title: recipe.name,
+        description: recipe.instructions,
+        calories: 200, // Replace with actual data if available
+        imageUrl: 'https://picsum.photos/400/200', // Dummy image
+        category: 'Generated',
+        canMake: recipe.canMake,
+      })));
+
+      toast({
+        title: 'Recipes Generated!',
+        description: 'Check out the delicious recipes we found for you.',
+      });
+    } catch (error: any) {
+      console.error('Error generating recipes:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error Generating Recipes',
+        description: error.message || 'Failed to generate recipes. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
       <Card className="w-full max-w-md bg-card text-card-foreground shadow-md">
         <CardHeader>
-          <CardTitle>Capture Ingredients Image</CardTitle>
-          <CardDescription>Capture an image of your ingredients to get started.</CardDescription>
+          <CardTitle>Generate Recipes from Image</CardTitle>
+          <CardDescription>Upload an image of ingredients to get recipe suggestions.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center">
-          <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted />
-
-          {!(hasCameraPermission) && (
-              <Alert variant="destructive">
-                  <AlertTitle>Camera Access Required</AlertTitle>
-                  <AlertDescription>
-                      Please allow camera access to use this feature.
-                  </AlertDescription>
-              </Alert>
-          )
-          }
-
-          <Button onClick={captureImage} disabled={!hasCameraPermission} className="mt-2 bg-accent text-primary-foreground hover:bg-accent-foreground">
-            Capture Image
-          </Button>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+            id="image-upload"
+          />
+          <label htmlFor="image-upload">
+            <Button
+              component="label"
+              disabled={isLoading}
+              className="mt-2 bg-accent text-primary-foreground hover:bg-accent-foreground"
+            >
+              {isLoading ? 'Loading...' : 'Upload Image'}
+            </Button>
+          </label>
 
           {image && (
-            <img src={image} alt="Captured ingredients" className="max-w-full h-auto rounded-md mt-4" />
+            <img src={image} alt="Uploaded ingredients" className="max-w-full h-auto rounded-md mt-4"/>
+          )}
+
+          <Button
+            onClick={generateRecipes}
+            disabled={isLoading || !image}
+            className="mt-4 bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+          >
+            {isLoading ? 'Generating Recipes...' : 'Generate Recipes'}
+          </Button>
+
+          {ingredients.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold">Identified Ingredients:</h3>
+              <ul>
+                {ingredients.map((ingredient, index) => (
+                  <li key={index}>{ingredient}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {recipes.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold">Generated Recipes:</h3>
+              <ul>
+                {recipes.map((recipe, index) => (
+                  <li key={index}>{recipe.title}</li>
+                ))}
+              </ul>
+            </div>
           )}
         </CardContent>
       </Card>
