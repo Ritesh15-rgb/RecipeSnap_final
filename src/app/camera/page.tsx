@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {useToast} from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Languages} from "@/components/LanguageFilter";
 import {Camera} from "lucide-react";
 import {useRouter} from "next/navigation";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 
 const CameraPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -21,6 +22,32 @@ const CameraPage = () => {
   const {toast} = useToast();
   const [language, setLanguage] = useState<Languages>("en");
   const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState(false);
+
+  useEffect(() => {
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({video: true});
+        setHasCameraPermission(true);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this app.',
+        });
+      }
+    };
+
+    getCameraPermission();
+  }, []);
+
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -64,13 +91,17 @@ const CameraPage = () => {
         return {
           ...recipe,
           instructions: detailedRecipeResult.instructions,
+          description: detailedRecipeResult.description,
+          tipsAndTricks: detailedRecipeResult.tipsAndTricks,
         };
       }));
 
       setRecipes(recipesWithInstructions.map(recipe => ({
         id: recipe.name, // Use recipe name as ID (assuming unique)
         title: recipe.name,
-        description: recipe.instructions ? recipe.instructions.join('\n') : 'No instructions available.',
+        description: recipe.description || 'No description available.',
+        instructions: recipe.instructions,
+        tipsAndTricks: recipe.tipsAndTricks,
         calories: 200, // Replace with actual data if available
         imageUrl: 'https://picsum.photos/400/200', // Dummy image
         category: 'Generated',
@@ -171,6 +202,27 @@ const CameraPage = () => {
                 {recipes.map((recipe, index) => (
                   <li key={index}>
                     <Button variant="link" onClick={() => router.push(`/recipe/${encodeURIComponent(recipe.title)}`)}>{recipe.title}</Button>
+                    <p>{recipe.description}</p>
+                    {recipe.tipsAndTricks && recipe.tipsAndTricks.length > 0 && (
+                      <>
+                        <h4>Tips and Tricks:</h4>
+                        <ul>
+                          {recipe.tipsAndTricks.map((tip, index) => (
+                            <li key={index}>{tip}</li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                    {recipe.instructions && recipe.instructions.length > 0 && (
+                      <>
+                        <h4>Instructions:</h4>
+                        <ol>
+                          {recipe.instructions.map((instruction, index) => (
+                            <li key={index}>{instruction}</li>
+                          ))}
+                        </ol>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -183,5 +235,3 @@ const CameraPage = () => {
 };
 
 export default CameraPage;
-
-    

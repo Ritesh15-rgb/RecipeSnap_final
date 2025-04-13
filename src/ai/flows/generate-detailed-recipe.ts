@@ -21,6 +21,8 @@ const GenerateDetailedRecipeOutputSchema = z.object({
   instructions: z.array(
     z.string().describe('A list of detailed, step-by-step instructions for the recipe.')
   ).describe('The detailed, step-by-step instructions for the recipe.'),
+  description: z.string().describe('A detailed description of the recipe, including its origin and cultural significance.'),
+  tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.'),
 });
 export type GenerateDetailedRecipeOutput = z.infer<typeof GenerateDetailedRecipeOutputSchema>;
 
@@ -54,10 +56,12 @@ const prompt = ai.definePrompt({
       instructions: z.array(
         z.string().describe('A list of detailed, step-by-step instructions for the recipe.')
       ).describe('The detailed, step-by-step instructions for the recipe.'),
+      description: z.string().describe('A detailed description of the recipe, including its origin and cultural significance.'),
+      tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.'),
     }),
   },
   prompt: `You are an expert chef, skilled at providing clear, concise, and easy-to-follow recipe instructions.
-Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}.  Use the 'formatInstructions' tool to format the instructions.`,
+Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}.  Also include a detailed description of the recipe, including its origin and cultural significance, and a list of tips and tricks for perfecting the recipe. Use the 'formatInstructions' tool to format the instructions.`,
   tools: [formatInstructions],
 });
 
@@ -73,8 +77,6 @@ const generateDetailedRecipeFlow = ai.defineFlow<
   async input => {
     const {output} = await prompt(input);
     const formattedInstructions = await formatInstructions({instructions: output!.instructions});
-    return {instructions: formattedInstructions};
+    return {instructions: formattedInstructions, description: output!.description, tipsAndTricks: output!.tipsAndTricks};
   }
 );
-
-    
