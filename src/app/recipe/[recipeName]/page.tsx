@@ -7,6 +7,7 @@ import React from 'react';
 
 const RecipeDetailPage = ({params}: { params: { recipeName: string } }) => {
   // Placeholder recipe data
+  // Use React.use() to unwrap the params object
   const recipeName = params.recipeName.replace(/%20/g, " ");
   const recipe = {
     name: recipeName,
@@ -73,5 +74,4 @@ const RecipeDetailPage = ({params}: { params: { recipeName: string } }) => {
 };
 
 export default RecipeDetailPage;
-
     
