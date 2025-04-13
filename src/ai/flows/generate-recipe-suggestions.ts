@@ -73,11 +73,11 @@ const prompt = ai.definePrompt({
       ).describe('A list of recipe suggestions.'),
     }),
   },
-  prompt: `You are a helpful recipe assistant. Given the following ingredients, suggest recipes that can be made.  The recipes should be in {{{language}}} language.
+  prompt: `You are a helpful recipe assistant. Given the following ingredients, suggest recipes that can be made. You must respond in the language requested. The recipes should be in {{{language}}} language.
 
 Ingredients: {{{ingredients}}}
 
-For each recipe, generate the recipe name, a list of ingredients, and instructions.  Use the 'canMakeRecipe' tool to determine whether the user can actually make the recipe.`, 
+For each recipe, generate the recipe name, a list of ingredients, and instructions in {{{language}}}. Use the 'canMakeRecipe' tool to determine whether the user can actually make the recipe.`,
   tools: [canMakeRecipe],
 });
 

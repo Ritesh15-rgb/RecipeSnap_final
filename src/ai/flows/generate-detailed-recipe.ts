@@ -30,19 +30,6 @@ export async function generateDetailedRecipe(input: GenerateDetailedRecipeInput)
   return generateDetailedRecipeFlow(input);
 }
 
-const formatInstructions = ai.defineTool({
-  name: 'formatInstructions',
-  description: 'Formats a list of instructions into a numbered, step-by-step format.',
-  inputSchema: z.object({
-    instructions: z.array(z.string()).describe('A list of instructions to format.'),
-    language: z.string().describe('The language to format the instructions in.'),
-  }),
-  outputSchema: z.array(z.string()).describe('A list of formatted, numbered instructions.'),
-}, async input => {
-  // Simply number the instructions for formatting
-  return input.instructions.map((instruction, index) => `${index + 1}. ${instruction}`);
-});
-
 const prompt = ai.definePrompt({
   name: 'generateDetailedRecipePrompt',
   input: {
@@ -61,9 +48,8 @@ const prompt = ai.definePrompt({
       tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.').optional(),
     }),
   },
-  prompt: `You are an expert chef, skilled at providing clear, concise, and easy-to-follow recipe instructions.
-Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}.  Also include a detailed description of the recipe, including its origin and cultural significance, and a list of tips and tricks for perfecting the recipe.`,
-  tools: [formatInstructions],
+  prompt: `You are an expert chef, skilled at providing clear, concise, and easy-to-follow recipe instructions.  You must respond in the language requested.
+Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}. Also include a detailed description of the recipe, including its origin and cultural significance, and a list of tips and tricks for perfecting the recipe. Ensure that all content, including descriptions, instructions, and tips, is written in the specified language.`,
 });
 
 const generateDetailedRecipeFlow = ai.defineFlow<
@@ -76,8 +62,7 @@ const generateDetailedRecipeFlow = ai.defineFlow<
     outputSchema: GenerateDetailedRecipeOutputSchema,
   },
   async input => {
-    const promptResult = await prompt(input);
-    const formattedInstructions = await formatInstructions({instructions: promptResult.output!.instructions, language: input.language});
-    return {instructions: formattedInstructions, description: promptResult.output!.description, tipsAndTricks: promptResult.output!.tipsAndTricks};
+    const {output} = await prompt(input);
+    return output!;
   }
 );
