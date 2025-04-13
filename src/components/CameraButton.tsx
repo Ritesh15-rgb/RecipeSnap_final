@@ -6,7 +6,7 @@ import {Camera} from 'lucide-react';
 const CameraButton = () => {
   return (
     <Link
-      href="/camera"
+      href="/create-recipe"
       className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg"
     >
       <div className="flex items-center">
