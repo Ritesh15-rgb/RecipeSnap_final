@@ -1,6 +1,4 @@
-'use client';
-
-import {Book, Heart, Home, Menu, Search, Settings, Upload, User} from "lucide-react";
+import {Book, Heart, Home, Menu, Search, Settings, Upload, User, FileText} from "lucide-react";
 import Link from 'next/link';
 import {
   Sheet,
@@ -75,6 +73,13 @@ const Navbar = ({onSearch}: NavbarProps) => {
                   <span className="text-lg">Upload Photo</span>
                 </Link>
               </li>
+                <li>
+                  <Link href="/recipe-from-text"
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors">
+                    <FileText className="h-6 w-6"/>
+                    <span className="text-lg">Recipe from Text</span>
+                  </Link>
+                </li>
 
               <div className="border-t my-4"></div>
 
