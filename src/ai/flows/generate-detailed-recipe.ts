@@ -21,8 +21,8 @@ const GenerateDetailedRecipeOutputSchema = z.object({
   instructions: z.array(
     z.string().describe('A list of detailed, step-by-step instructions for the recipe.')
   ).describe('The detailed, step-by-step instructions for the recipe.'),
-  description: z.string().describe('A detailed description of the recipe, including its origin and cultural significance.'),
-  tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.'),
+  description: z.string().describe('A detailed description of the recipe, including its origin and cultural significance.').optional(),
+  tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.').optional(),
 });
 export type GenerateDetailedRecipeOutput = z.infer<typeof GenerateDetailedRecipeOutputSchema>;
 
@@ -35,6 +35,7 @@ const formatInstructions = ai.defineTool({
   description: 'Formats a list of instructions into a numbered, step-by-step format.',
   inputSchema: z.object({
     instructions: z.array(z.string()).describe('A list of instructions to format.'),
+    language: z.string().describe('The language to format the instructions in.'),
   }),
   outputSchema: z.array(z.string()).describe('A list of formatted, numbered instructions.'),
 }, async input => {
@@ -56,12 +57,12 @@ const prompt = ai.definePrompt({
       instructions: z.array(
         z.string().describe('A list of detailed, step-by-step instructions for the recipe.')
       ).describe('The detailed, step-by-step instructions for the recipe.'),
-      description: z.string().describe('A detailed description of the recipe, including its origin and cultural significance.'),
-      tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.'),
+      description: z.string().describe('A detailed description of the recipe, including its origin and cultural significance.').optional(),
+      tipsAndTricks: z.array(z.string()).describe('A list of tips and tricks for perfecting the recipe.').optional(),
     }),
   },
   prompt: `You are an expert chef, skilled at providing clear, concise, and easy-to-follow recipe instructions.
-Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}.  Also include a detailed description of the recipe, including its origin and cultural significance, and a list of tips and tricks for perfecting the recipe. Use the 'formatInstructions' tool to format the instructions.`,
+Generate detailed, step-by-step instructions for the recipe "{{recipeName}}" in {{{language}}} language, using the ingredients: {{{ingredients}}}.  Also include a detailed description of the recipe, including its origin and cultural significance, and a list of tips and tricks for perfecting the recipe.`,
   tools: [formatInstructions],
 });
 
@@ -75,8 +76,8 @@ const generateDetailedRecipeFlow = ai.defineFlow<
     outputSchema: GenerateDetailedRecipeOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    const formattedInstructions = await formatInstructions({instructions: output!.instructions});
-    return {instructions: formattedInstructions, description: output!.description, tipsAndTricks: output!.tipsAndTricks};
+    const promptResult = await prompt(input);
+    const formattedInstructions = await formatInstructions({instructions: promptResult.output!.instructions, language: input.language});
+    return {instructions: formattedInstructions, description: promptResult.output!.description, tipsAndTricks: promptResult.output!.tipsAndTricks};
   }
 );
