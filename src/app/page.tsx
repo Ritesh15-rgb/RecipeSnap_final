@@ -10,8 +10,8 @@ import {Recipe} from '@/components/RecipeCard';
 import {useToast} from '@/hooks/use-toast';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {useSearchParams} from "next/navigation";
-import { Carrot, Apple, Salad, Utensils } from 'lucide-react';
-
+import {Utensils } from 'lucide-react';
+import { Salad, Carrot, Apple, ChefHat } from 'lucide-react';
 
 const recipesData = [
   {
@@ -144,19 +144,6 @@ const Index = () => {
 
       <CameraButton />
 
-      <section className="w-full flex justify-center py-7">
-          <Select>
-              <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                  <SelectItem value="Vegetable"><Carrot className="mr-2 h-4 w-4"/>Vegetable</SelectItem>
-                  <SelectItem value="Fruit"><Apple className="mr-2 h-4 w-4"/>Fruit</SelectItem>
-                  <SelectItem value="Salad"><Salad className="mr-2 h-4 w-4"/>Salad</SelectItem>
-                  <SelectItem value="Restaurant"><Utensils className="mr-2 h-4 w-4"/>Restaurant</SelectItem>
-              </SelectContent>
-          </Select>
-      </section>
     </div>
   );
 };
