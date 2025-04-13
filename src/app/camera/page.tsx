@@ -10,7 +10,7 @@ import {generateDetailedRecipe} from '@/ai/flows/generate-detailed-recipe';
 import {Recipe} from "@/components/RecipeCard";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Languages} from "@/components/LanguageFilter";
-import {Camera} from "lucide-react";
+import {Camera } from "lucide-react";
 import {useRouter} from "next/navigation";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 
@@ -50,29 +50,33 @@ const CameraPage = () => {
   }, []);
 
   useEffect(() => {
-    switch (language) {
-      case "mr":
-        setGeneratedRecipesHeading("व्युत्पन्न पाककृती:"); // Marathi
-        break;
-      case "hi":
-        setGeneratedRecipesHeading("उत्पन्न व्यंजन:"); // Hindi
-        break;
-      case "es":
-        setGeneratedRecipesHeading("Recetas generadas:"); // Spanish
-        break;
-      case "fr":
-        setGeneratedRecipesHeading("Recettes générées:"); // French
-        break;
-      case "de":
-        setGeneratedRecipesHeading("Generierte Rezepte:"); // German
-        break;
-      case "ja":
-        setGeneratedRecipesHeading("生成されたレシピ:"); // Japanese
-        break;
-      default:
-        setGeneratedRecipesHeading("Generated Recipes:"); // English
-        break;
-    }
+    const updateHeading = () => {
+      switch (language) {
+        case "mr":
+          setGeneratedRecipesHeading("व्युत्पन्न पाककृती:"); // Marathi
+          break;
+        case "hi":
+          setGeneratedRecipesHeading("उत्पन्न व्यंजन:"); // Hindi
+          break;
+        case "es":
+          setGeneratedRecipesHeading("Recetas generadas:"); // Spanish
+          break;
+        case "fr":
+          setGeneratedRecipesHeading("Recettes générées:"); // French
+          break;
+        case "de":
+          setGeneratedRecipesHeading("Generierte Rezepte:"); // German
+          break;
+        case "ja":
+          setGeneratedRecipesHeading("生成されたレシピ:"); // Japanese
+          break;
+        default:
+          setGeneratedRecipesHeading("Generated Recipes:"); // English
+          break;
+      }
+    };
+
+    updateHeading();
   }, [language]);
 
 
@@ -277,4 +281,3 @@ const CameraPage = () => {
 };
 
 export default CameraPage;
-
