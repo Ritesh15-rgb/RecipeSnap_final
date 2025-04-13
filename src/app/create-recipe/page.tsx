@@ -13,6 +13,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Recipe} from "@/components/RecipeCard";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
+import Navbar from "@/components/Navbar";
 
 const CreateRecipe = () => {
   const router = useRouter();
@@ -193,8 +194,13 @@ const CreateRecipe = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
+        <Navbar />
       <Card className="w-full max-w-md bg-card text-card-foreground shadow-md">
         <CardHeader>
+            <Button variant="ghost" onClick={() => router.back()}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
           <CardTitle>Create Recipe</CardTitle>
           <CardDescription>Upload an image of your ingredients to generate a recipe.</CardDescription>
         </CardHeader>
