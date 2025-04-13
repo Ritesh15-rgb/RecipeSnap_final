@@ -1,4 +1,6 @@
-import {Book, Heart, Home, Menu, Search, Settings, Upload, User, FileText} from "lucide-react";
+'use client';
+
+import {Book, Heart, Home, Menu, Search, Settings, Upload, User, FileText, Youtube} from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -9,18 +11,20 @@ import {
 } from '@/components/ui/sheet';
 import {useIsMobile} from '@/hooks/use-mobile';
 import {useState} from "react";
+import {useRouter} from "next/navigation";
 
 interface NavbarProps {
-  onSearch: (term: string) => void;
+  onSearch?: (term: string) => void;
 }
 
 const Navbar = ({onSearch}: NavbarProps) => {
   const isMobile = useIsMobile();
+    const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    onSearch(e.target.value);
+    onSearch?.(e.target.value);
   };
 
   return (
@@ -73,12 +77,21 @@ const Navbar = ({onSearch}: NavbarProps) => {
                   <span className="text-lg">Upload Photo</span>
                 </Link>
               </li>
+              <li>
+                <Link href="/recipe-from-text"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors">
+                  <FileText className="h-6 w-6"/>
+                  <span className="text-lg">Recipe from Text</span>
+                </Link>
+              </li>
                 <li>
-                  <Link href="/recipe-from-text"
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors">
-                    <FileText className="h-6 w-6"/>
-                    <span className="text-lg">Recipe from Text</span>
-                  </Link>
+                    <Link
+                        href="/youtube-recommendation"
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                    >
+                        <Youtube className="h-6 w-6"/>
+                        <span className="text-lg">YouTube Recommendation</span>
+                    </Link>
                 </li>
 
               <div className="border-t my-4"></div>
