@@ -1,168 +1,164 @@
 'use client';
 
-import {useState, useRef, useEffect} from 'react';
-import {identifyIngredients} from '@/ai/flows/identify-ingredients';
-import {generateRecipeSuggestions} from '@/ai/flows/generate-recipe-suggestions';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {Input} from '@/components/ui/input';
-import {Textarea} from '@/components/ui/textarea';
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert"
-import {Info} from "lucide-react"
-import {Badge} from "@/components/ui/badge";
-import {Toaster} from "@/components/ui/toaster";
-import Link from "next/link";
+import {useState, useEffect} from 'react';
+import Navbar from '@/components/Navbar';
+import CategoryFilter from '@/components/CategoryFilter';
+import RecipeGrid from '@/components/RecipeGrid';
+import PopularRecipes from '@/components/PopularRecipes';
+import CameraButton from '@/components/CameraButton';
+import {Recipe} from '@/components/RecipeCard';
+import {useToast} from '@/hooks/use-toast';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-
-export default function Home() {
-  const [image, setImage] = useState<string | null>(null);
-  const [ingredients, setIngredients] = useState<string[]>([]);
-  const [recipes, setRecipes] = useState<
-    {
-      name: string;
-      ingredients: string[];
-      instructions: string;
-      canMake: boolean;
-    }[]
-  >([]);
-  const [loadingIngredients, setLoadingIngredients] = useState(false);
-  const [loadingRecipes, setLoadingRecipes] = useState(false);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [hasCameraPermission, setHasCameraPermission] = useState(false);
-  const [language, setLanguage] = useState<string>('English');
+import {useSearchParams} from "next/navigation";
+import { Carrot, Apple, Salad, Utensils } from 'lucide-react';
 
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+const recipesData = [
+  {
+    id: '1',
+    title: 'Chicken Fried Rice',
+    description: 'So irresistibly delicious',
+    calories: 250,
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+    category: 'Vegetable',
+  },
+  {
+    id: '2',
+    title: 'Pasta Bolognese',
+    description: 'True Italian classic',
+    calories: 200,
+    imageUrl: 'https://images.unsplash.com/photo-1563379926898-05f4575a45d8',
+    category: 'Rice',
+  },
+  {
+    id: '3',
+    title: 'Garlic Potatoes',
+    description: 'Crispy Garlic Roasted Potatoes',
+    calories: 150,
+    imageUrl: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf',
+    category: 'Vegetable',
+  },
+  {
+    id: '4',
+    title: 'Fruit Salad',
+    description: 'Sweet and refreshing mix',
+    calories: 120,
+    imageUrl: 'https://images.unsplash.com/photo-1568158879083-c42860933ed7',
+    category: 'Fruit',
+  },
+  {
+    id: '5',
+    title: 'Avocado Toast',
+    description: 'Perfect breakfast option',
+    calories: 180,
+    imageUrl: 'https://images.unsplash.com/photo-1588137378633-dea1168d0ce6',
+    category: 'Breakfast',
+  },
+  {
+    id: '6',
+    title: 'Grilled Salmon',
+    description: 'Fresh and healthy seafood',
+    calories: 220,
+    imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2',
+    category: 'Seafood',
+  },
+  {
+    id: '7',
+    title: 'Chocolate Cake',
+    description: 'Rich and decadent dessert',
+    calories: 350,
+    imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587',
+    category: 'Dessert',
+  },
+  {
+    id: '8',
+    title: 'Iced Coffee',
+    description: 'Refreshing cold brew',
+    calories: 90,
+    imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735',
+    category: 'Beverages',
+  },
+];
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+type Category =
+  | 'All'
+  | 'Vegetable'
+  | 'Rice'
+  | 'Fruit'
+  | 'Breakfast'
+  | 'Seafood'
+  | 'Fast Food'
+  | 'Dessert'
+  | 'Beverages';
 
-  const identifyIngredientsFromImage = async () => {
-    if (!image) return;
+const Index = () => {
+  const [activeCategory, setActiveCategory] = useState<Category>('All');
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const {toast} = useToast();
 
-    setLoadingIngredients(true);
-    try {
-      const result = await identifyIngredients({photoUrl: image});
-      setIngredients(result.ingredients);
-    } catch (error) {
-      console.error('Error identifying ingredients:', error);
-    } finally {
-      setLoadingIngredients(false);
-    }
-  };
+  useEffect(() => {
+    // In a real app, we would fetch from an API
+    setRecipes(recipesData);
 
-  const generateRecipeSuggestionsFromIngredients = async () => {
-    if (!ingredients.length) return;
+    // Display welcome toast on initial load
+    toast({
+      title: 'Welcome to Springy Salads!',
+      description: 'Discover healthy and delicious recipes',
+      duration: 3000,
+    });
+  }, []);
 
-    setLoadingRecipes(true);
-    try {
-      const result = await generateRecipeSuggestions({ingredients: ingredients, language: language});
-      setRecipes(result.recipes);
-    } catch (error) {
-      console.error('Error generating recipe suggestions:', error);
-    } finally {
-      setLoadingRecipes(false);
-    }
-  };
+  const featuredRecipes =
+    activeCategory === 'All'
+      ? recipes
+      : recipes.filter(r => r.category === activeCategory);
+
+  const popularRecipes = recipes.filter(r => r.calories > 200);
+
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
 
   return (
-    <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
-        <Toaster />
-      <h1 className="text-3xl font-bold mb-4 text-primary">RecipeSnap</h1>
+    <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
+      <Navbar />
 
-      <div className="flex flex-col md:flex-row gap-4 w-full max-w-4xl">
-        {/* Image Upload Section */}
-        <Card className="w-full md:w-1/2">
-          <CardHeader>
-            <CardTitle>Upload Ingredients Image</CardTitle>
-            <CardDescription>Upload an image of your ingredients to get started.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <Input type="file" accept="image/*" onChange={handleImageUpload} className="mb-2" />
-
-            {image && (
-              <img src={image} alt="Uploaded ingredients" className="max-w-full h-auto rounded-md" />
-            )}
-            <Button onClick={identifyIngredientsFromImage} disabled={loadingIngredients} className="mt-4 bg-accent text-primary-foreground hover:bg-accent-foreground">
-              {loadingIngredients ? 'Identifying Ingredients...' : 'Identify Ingredients'}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Identified Ingredients Section */}
-        <Card className="w-full md:w-1/2">
-          <CardHeader>
-            <CardTitle>Identified Ingredients</CardTitle>
-            <CardDescription>Here are the ingredients identified from the image.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingIngredients && <p>Loading ingredients...</p>}
-            {!loadingIngredients && ingredients.length === 0 && image && (
-              <Alert variant="info">
-                <Info className="h-4 w-4" />
-                <AlertTitle>No ingredients identified!</AlertTitle>
-                <AlertDescription>
-                  Please try another image.
-                </AlertDescription>
-              </Alert>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {ingredients.map((ingredient, index) => (
-                <Badge key={index}>{ingredient}</Badge>
-              ))}
-            </div>
-            <Select onValueChange={setLanguage}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="English">English</SelectItem>
-                <SelectItem value="Marathi">Marathi</SelectItem>
-                <SelectItem value="Hindi">Hindi</SelectItem>
-                {/* Add more languages as needed */}
-              </SelectContent>
-            </Select>
-            <Button onClick={generateRecipeSuggestionsFromIngredients} disabled={loadingRecipes || ingredients.length === 0} className="mt-4 bg-accent text-primary-foreground hover:bg-accent-foreground">
-              {loadingRecipes ? 'Generating Recipes...' : 'Generate Recipe Suggestions'}
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="mb-4">
+        <h1 className="text-4xl font-bold">Springy Salads</h1>
+        <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
 
-      {/* Recipe Suggestions Section */}
-      {recipes.length > 0 && (
-        <div className="w-full max-w-4xl mt-8">
-          <h2 className="text-2xl font-bold mb-4 text-primary">Recipe Suggestions</h2>
-          <div className="flex flex-col gap-4">
-            {recipes.map((recipe, index) => (
-              <Card key={index} className="bg-card text-card-foreground shadow-md">
-                <CardHeader>
-                  <CardTitle>{recipe.name}</CardTitle>
-                  <CardDescription>
-                    Ingredients:{' '}
-                    {recipe.ingredients.map((ingredient, i) => (
-                      <span key={i}>
-                        {ingredient}
-                        {i < recipe.ingredients.length - 1 ? ', ' : ''}
-                      </span>
-                    ))}
-                    {recipe.canMake ? null : <Badge variant="destructive">Missing Ingredients</Badge>}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Link href={`/recipe/${recipe.name}`}><Textarea value={recipe.instructions} readOnly className="min-h-[100px]"/></Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+      <CategoryFilter
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+      />
+
+      {featuredRecipes.length > 0 && (
+        <RecipeGrid
+          recipes={featuredRecipes}
+          category={activeCategory}
+          title={`${activeCategory} Recipes`}
+        />
       )}
+
+      <PopularRecipes recipes={popularRecipes} />
+
+      <CameraButton />
+
+      <section className="w-full flex justify-center py-7">
+          <Select>
+              <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="Vegetable"><Carrot className="mr-2 h-4 w-4"/>Vegetable</SelectItem>
+                  <SelectItem value="Fruit"><Apple className="mr-2 h-4 w-4"/>Fruit</SelectItem>
+                  <SelectItem value="Salad"><Salad className="mr-2 h-4 w-4"/>Salad</SelectItem>
+                  <SelectItem value="Restaurant"><Utensils className="mr-2 h-4 w-4"/>Restaurant</SelectItem>
+              </SelectContent>
+          </Select>
+      </section>
     </div>
   );
-}
+};
+
+export default Index;
