@@ -7,7 +7,7 @@ import RecipeGrid from '@/components/RecipeGrid';
 import PopularRecipes from '@/components/PopularRecipes';
 import CameraButton from '@/components/CameraButton';
 import { Recipe } from '@/components/RecipeCard';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const mockRecipes: Recipe[] = [
   {
@@ -131,4 +131,3 @@ const Index = () => {
 };
 
 export default Index;
-
