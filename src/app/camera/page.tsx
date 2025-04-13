@@ -7,6 +7,9 @@ import {useToast} from "@/hooks/use-toast";
 import {identifyIngredients} from '@/ai/flows/identify-ingredients';
 import {generateRecipeSuggestions} from '@/ai/flows/generate-recipe-suggestions';
 import {Recipe} from "@/components/RecipeCard";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Languages} from "@/components/LanguageFilter";
+import {Slot} from "@radix-ui/react-slot";
 
 const CameraPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -14,6 +17,7 @@ const CameraPage = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const {toast} = useToast();
+  const [language, setLanguage] = useState<Languages>("en");
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,7 +48,7 @@ const CameraPage = () => {
       setIngredients(identifiedIngredients);
 
       // 2. Generate recipe suggestions
-      const recipeResult = await generateRecipeSuggestions({ingredients: identifiedIngredients});
+      const recipeResult = await generateRecipeSuggestions({ingredients: identifiedIngredients, language: language});
       setRecipes(recipeResult.recipes.map(recipe => ({
         id: recipe.name, // Use recipe name as ID (assuming unique)
         title: recipe.name,
@@ -88,17 +92,34 @@ const CameraPage = () => {
           />
           <label htmlFor="image-upload">
             <Button
-              component="label"
+              asChild
               disabled={isLoading}
               className="mt-2 bg-accent text-primary-foreground hover:bg-accent-foreground"
             >
-              {isLoading ? 'Loading...' : 'Upload Image'}
+              <Slot>
+                {isLoading ? 'Loading...' : 'Upload Image'}
+              </Slot>
             </Button>
           </label>
 
           {image && (
             <img src={image} alt="Uploaded ingredients" className="max-w-full h-auto rounded-md mt-4"/>
           )}
+
+          <Select value={language} onValueChange={setLanguage}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select language"/>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="es">Spanish</SelectItem>
+              <SelectItem value="fr">French</SelectItem>
+              <SelectItem value="de">German</SelectItem>
+              <SelectItem value="ja">Japanese</SelectItem>
+              <SelectItem value="hi">Hindi</SelectItem>
+              <SelectItem value="mr">Marathi</SelectItem>
+            </SelectContent>
+          </Select>
 
           <Button
             onClick={generateRecipes}
