@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export interface Recipe {
   id: string;
   title: string;
@@ -8,6 +10,7 @@ export interface Recipe {
   imageUrl: string;
   category: string;
   canMake?: boolean; // Add optional canMake property
+  href?: string; // Optional href for detailed recipe view
 }
 
 interface RecipeCardProps {
@@ -27,9 +30,16 @@ const RecipeCard = ({recipe}: RecipeCardProps) => {
             {recipe.canMake ? 'You can make this recipe!' : 'You might not have all ingredients.'}
           </p>
         )}
+        {recipe.href && (
+          <Link href={recipe.href} className="text-blue-500 text-sm mt-2 block">
+            View Recipe
+          </Link>
+        )}
       </div>
     </div>
   );
 };
 
 export default RecipeCard;
+
+    

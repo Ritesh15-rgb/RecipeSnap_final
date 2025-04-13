@@ -2,12 +2,14 @@
 
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Textarea} from '@/components/ui/textarea';
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import React from 'react';
 
 const RecipeDetailPage = ({params}: { params: { recipeName: string } }) => {
   // Placeholder recipe data
+  const recipeName = params.recipeName.replace(/%20/g, " ");
   const recipe = {
-    name: params.recipeName.replace(/%20/g, " "),
+    name: recipeName,
     ingredients: [
       '1 cup flour',
       '1/2 cup sugar',
@@ -15,10 +17,26 @@ const RecipeDetailPage = ({params}: { params: { recipeName: string } }) => {
       '1 egg',
       '1/2 tsp baking powder',
     ],
-    instructions:
-      '1. Preheat oven to 350°F.\n2. Mix dry ingredients together.\n3. Add wet ingredients and mix well.\n4. Bake for 20 minutes.',
+    instructions: [
+      '1. Preheat oven to 350°F.',
+      '2. Mix dry ingredients together.',
+      '3. Add wet ingredients and mix well.',
+      '4. Bake for 20 minutes.',
+    ],
     imageUrl: 'https://picsum.photos/400/200', // Dummy image URL
   };
+
+  // Error handling if recipe doesn't exist
+  if (!recipe) {
+    return (
+      <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>Recipe not found.</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center min-h-screen p-4 bg-secondary">
@@ -41,7 +59,13 @@ const RecipeDetailPage = ({params}: { params: { recipeName: string } }) => {
             alt={recipe.name}
             className="w-full h-auto rounded-md"
           />
-          <Textarea value={recipe.instructions} readOnly className="min-h-[150px]" />
+          {recipe.instructions && recipe.instructions.length > 0 ? (
+            recipe.instructions.map((instruction, index) => (
+              <Textarea key={index} value={instruction} readOnly className="min-h-[50px]" />
+            ))
+          ) : (
+            <Textarea value="No instructions available." readOnly className="min-h-[150px]" />
+          )}
         </CardContent>
       </Card>
     </div>
@@ -49,3 +73,5 @@ const RecipeDetailPage = ({params}: { params: { recipeName: string } }) => {
 };
 
 export default RecipeDetailPage;
+
+    

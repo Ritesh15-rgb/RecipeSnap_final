@@ -6,10 +6,12 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/compo
 import {useToast} from "@/hooks/use-toast";
 import {identifyIngredients} from '@/ai/flows/identify-ingredients';
 import {generateRecipeSuggestions} from '@/ai/flows/generate-recipe-suggestions';
+import {generateDetailedRecipe} from '@/ai/flows/generate-detailed-recipe';
 import {Recipe} from "@/components/RecipeCard";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Languages} from "@/components/LanguageFilter";
 import {Camera} from "lucide-react";
+import {useRouter} from "next/navigation";
 
 const CameraPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -18,6 +20,7 @@ const CameraPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const {toast} = useToast();
   const [language, setLanguage] = useState<Languages>("en");
+  const router = useRouter();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -49,14 +52,30 @@ const CameraPage = () => {
 
       // 2. Generate recipe suggestions
       const recipeResult = await generateRecipeSuggestions({ingredients: identifiedIngredients, language: language});
-      setRecipes(recipeResult.recipes.map(recipe => ({
+      const recipeSuggestions = recipeResult.recipes;
+
+      // 3. Generate detailed instructions for each recipe
+      const recipesWithInstructions = await Promise.all(recipeSuggestions.map(async recipe => {
+        const detailedRecipeResult = await generateDetailedRecipe({
+          recipeName: recipe.name,
+          ingredients: recipe.ingredients,
+          language: language,
+        });
+        return {
+          ...recipe,
+          instructions: detailedRecipeResult.instructions,
+        };
+      }));
+
+      setRecipes(recipesWithInstructions.map(recipe => ({
         id: recipe.name, // Use recipe name as ID (assuming unique)
         title: recipe.name,
-        description: recipe.instructions,
+        description: recipe.instructions ? recipe.instructions.join('\n') : 'No instructions available.',
         calories: 200, // Replace with actual data if available
         imageUrl: 'https://picsum.photos/400/200', // Dummy image
         category: 'Generated',
         canMake: recipe.canMake,
+        href: `/recipe/${encodeURIComponent(recipe.name)}`, // Add href
       })));
 
       toast({
@@ -150,7 +169,9 @@ const CameraPage = () => {
               <h3 className="text-lg font-semibold">Generated Recipes:</h3>
               <ul>
                 {recipes.map((recipe, index) => (
-                  <li key={index}>{recipe.title}</li>
+                  <li key={index}>
+                    <Button variant="link" onClick={() => router.push(`/recipe/${encodeURIComponent(recipe.title)}`)}>{recipe.title}</Button>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -162,3 +183,5 @@ const CameraPage = () => {
 };
 
 export default CameraPage;
+
+    
