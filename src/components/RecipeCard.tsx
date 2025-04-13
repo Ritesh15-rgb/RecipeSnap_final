@@ -53,7 +53,7 @@ const RecipeCard = ({recipe}: RecipeCardProps) => {
           </p>
         )}
         {recipe.href && (
-          <Link href={recipe.href} className="text-blue-500 text-sm mt-2 block">
+            <Link href={`/recipe/${encodeURIComponent(recipe.title)}`} className="text-blue-500 text-sm mt-2 block">
             View Recipe
           </Link>
         )}
@@ -63,3 +63,4 @@ const RecipeCard = ({recipe}: RecipeCardProps) => {
 };
 
 export default RecipeCard;
+
