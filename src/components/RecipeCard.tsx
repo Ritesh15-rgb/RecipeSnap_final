@@ -7,7 +7,7 @@ export interface Recipe {
   title: string;
   description: string;
   calories: number;
-  imageUrl: string;
+  imageUrl?: string;
   category: string;
   canMake?: boolean; // Add optional canMake property
   href?: string; // Optional href for detailed recipe view
@@ -20,9 +20,11 @@ interface RecipeCardProps {
 }
 
 const RecipeCard = ({recipe}: RecipeCardProps) => {
+  const imageUrl = recipe.imageUrl || 'https://via.placeholder.com/400x200'; // Use placeholder if imageUrl is missing
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <img className="w-full h-48 object-cover" src={recipe.imageUrl} alt={recipe.title}/>
+      <img className="w-full h-48 object-cover" src={imageUrl} alt={recipe.title}/>
       <div className="p-4">
         <h3 className="font-bold text-lg mb-2">{recipe.title}</h3>
         <p className="text-gray-600 text-sm">{recipe.description}</p>
@@ -63,4 +65,3 @@ const RecipeCard = ({recipe}: RecipeCardProps) => {
 };
 
 export default RecipeCard;
-

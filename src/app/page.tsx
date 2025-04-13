@@ -1,23 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import Navbar from '@/components/Navbar';
 import CategoryFilter from '@/components/CategoryFilter';
 import RecipeGrid from '@/components/RecipeGrid';
 import PopularRecipes from '@/components/PopularRecipes';
 import CameraButton from '@/components/CameraButton';
-import { Recipe } from '@/components/RecipeCard';
-import { useToast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useSearchParams } from "next/navigation";
-import { Languages } from "@/components/LanguageFilter";
-import { Carrot, Apple, Salad } from 'lucide-react';
+import {Recipe} from '@/components/RecipeCard';
+import {useToast} from '@/hooks/use-toast';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Languages} from "@/components/LanguageFilter";
+import {useRouter} from "next/navigation";
+import {Search} from "lucide-react";
 
 const mockRecipes: Recipe[] = [
   {
@@ -91,14 +85,16 @@ type Category = 'All' | 'Vegetable' | 'Rice' | 'Fruit' | 'Breakfast' | 'Seafood'
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const { toast } = useToast();
-    const [language, setLanguage] = useState<Languages>("en");
-
+  const {toast} = useToast();
+  const [language, setLanguage] = useState<Languages>("en");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Recipe[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     // In a real app, we would fetch from an API
     setRecipes(mockRecipes);
-    
+
     // Display welcome toast on initial load
     toast({
       title: "Welcome to Springy Salads!",
@@ -106,51 +102,91 @@ const Index = () => {
       duration: 1000,
     });
   }, []);
-  
-  const featuredRecipes = activeCategory === 'All' 
-    ? recipes 
+
+  useEffect(() => {
+    // Mock API call for search
+    const fetchSearchResults = async () => {
+      if (searchTerm) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const results = mockRecipes.filter(recipe =>
+          recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          recipe.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setSearchResults(results);
+      } else {
+        setSearchResults([]);
+      }
+    };
+
+    fetchSearchResults();
+  }, [searchTerm]);
+
+  const featuredRecipes = activeCategory === 'All'
+    ? recipes
     : recipes.filter(r => r.category === activeCategory);
+
   const popularRecipes = recipes.filter(r => r.calories > 200);
 
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
   return (
-    <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
-      <Navbar />
-      
+    <div className="max-w-md mx-auto px-4 pb-20 bg-secondary min-h-screen">
+      <Navbar onSearch={handleSearch}/>
+
       <div className="mb-4">
         <h1 className="text-4xl font-bold">Springy Salads</h1>
         <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
-        <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select language"/>
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
-                <SelectItem value="de">German</SelectItem>
-                <SelectItem value="ja">Japanese</SelectItem>
-                <SelectItem value="hi">Hindi</SelectItem>
-                <SelectItem value="mr">Marathi</SelectItem>
-            </SelectContent>
-        </Select>
-      
-      <CategoryFilter 
+
+      <Select value={language} onValueChange={setLanguage}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select language"/>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">English</SelectItem>
+          <SelectItem value="es">Spanish</SelectItem>
+          <SelectItem value="fr">French</SelectItem>
+          <SelectItem value="de">German</SelectItem>
+          <SelectItem value="ja">Japanese</SelectItem>
+          <SelectItem value="hi">Hindi</SelectItem>
+          <SelectItem value="mr">Marathi</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <CategoryFilter
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
       />
-      
-      {featuredRecipes.length > 0 && (
-        <RecipeGrid 
+
+      {searchTerm && searchResults.length > 0 && (
+        <RecipeGrid
+          recipes={searchResults}
+          category="Search Results"
+          title={`Search Results for "${searchTerm}"`}
+        />
+      )}
+
+      {searchTerm && searchResults.length === 0 && (
+        <div className="mb-4">
+          <p>No recipes found for "{searchTerm}".</p>
+        </div>
+      )}
+
+      {!searchTerm && featuredRecipes.length > 0 && (
+        <RecipeGrid
           recipes={featuredRecipes}
-          category={activeCategory} 
+          category={activeCategory}
           title={`${activeCategory} Recipes`}
         />
       )}
-      
-      <PopularRecipes recipes={popularRecipes} />
-      
-      <CameraButton />
+
+      {!searchTerm && <PopularRecipes recipes={popularRecipes}/>}
+
+      <CameraButton/>
     </div>
   );
 };
