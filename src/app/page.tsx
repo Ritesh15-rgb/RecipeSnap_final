@@ -8,10 +8,6 @@ import PopularRecipes from '@/components/PopularRecipes';
 import CameraButton from '@/components/CameraButton';
 import {Recipe} from '@/components/RecipeCard';
 import {useToast} from '@/hooks/use-toast';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {useSearchParams} from "next/navigation";
-import {Utensils } from 'lucide-react';
-import { Salad, Carrot, Apple, ChefHat } from 'lucide-react';
 
 const recipesData = [
   {
@@ -115,9 +111,6 @@ const Index = () => {
 
   const popularRecipes = recipes.filter(r => r.calories > 200);
 
-  const searchParams = useSearchParams();
-  const category = searchParams.get("category");
-
   return (
     <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
       <Navbar />
@@ -149,3 +142,4 @@ const Index = () => {
 };
 
 export default Index;
+
