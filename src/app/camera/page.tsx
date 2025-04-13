@@ -83,17 +83,32 @@ const CameraPage = () => {
 
       // 3. Generate detailed instructions for each recipe
       const recipesWithInstructions = await Promise.all(recipeSuggestions.map(async recipe => {
-        const detailedRecipeResult = await generateDetailedRecipe({
-          recipeName: recipe.name,
-          ingredients: recipe.ingredients,
-          language: language,
-        });
-        return {
-          ...recipe,
-          instructions: detailedRecipeResult.instructions,
-          description: detailedRecipeResult.description,
-          tipsAndTricks: detailedRecipeResult.tipsAndTricks,
-        };
+        try {
+          const detailedRecipeResult = await generateDetailedRecipe({
+            recipeName: recipe.name,
+            ingredients: recipe.ingredients,
+            language: language,
+          });
+          return {
+            ...recipe,
+            instructions: detailedRecipeResult.instructions,
+            description: detailedRecipeResult.description,
+            tipsAndTricks: detailedRecipeResult.tipsAndTricks,
+          };
+        } catch (error: any) {
+          console.error(`Error generating detailed recipe for ${recipe.name}:`, error);
+          toast({
+            variant: 'destructive',
+            title: 'Error Generating Detailed Recipe',
+            description: `Failed to generate detailed recipe for ${recipe.name}. Please try again.`,
+          });
+          return {
+            ...recipe,
+            instructions: [],
+            description: 'Failed to generate description.',
+            tipsAndTricks: [],
+          };
+        }
       }));
 
       setRecipes(recipesWithInstructions.map(recipe => ({
